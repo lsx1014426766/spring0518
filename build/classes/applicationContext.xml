@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.1.xsd
+	http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-3.1.xsd" 
+     default-autowire="byType">
+	<!-- p命名空间给属性注入值
+	 bean会自动调用其无参的构造函数 
+	 这里可以灵活切换给deptService注入的dao
+	 在bean定义中必须提供需要属性的set方法，才能完成依赖注入-->
+<!-- 	<bean  id="dept"  class="com.zrgk.dao.Dept"  p:deptno="20" p:dname="研发部"  p:loc="beijingshi"></bean>
+	
+	<bean  id="deptDao"  class="com.zrgk.dao.impl.DeptHibernateDaoImpl"></bean>
+	<bean  id="deptDao1"  class="com.zrgk.dao.impl.DeptJDBCDaoImpl"></bean>
+	<bean   id="deptService"
+		    class="com.zrgk.service.impl.DeptServiceImpl" 
+		    scope="prototype">
+		    <property name="dao"  ref="deptDao"></property>
+		    
+	</bean> -->
+	
+	<!-- 
+	替换上面的bean定义，改用注解的方式实现，增加包扫描
+	 -->
+<context:component-scan base-package="com.zrgk"></context:component-scan>
+<!-- 创建切面对象 -->
+	<bean  id="logAspect"  class="com.zrgk.aop.LogAspect"></bean>
+	<!-- 配置切面对象 以及切入点-->
+	<aop:config>
+		<!-- 配置切入点 
+		注意这个表达式的写法
+		-->
+		<aop:pointcut  id="logingPointCut"  expression="execution(* com.zrgk.service.*.*(..))" />
+		<aop:aspect ref="logAspect">
+		<!-- 
+		 切入点相同，执行的方法不同  切面上定义了多个方法
+		 -->
+			<!-- 环绕通知  注意环绕通知早于前置通知 -->
+			<aop:around  method="aroundMethod" pointcut-ref="logingPointCut"></aop:around>
+			<!-- 前置通知      将切面对象的行为作用在目标方法的时机或者未在 -->
+			<aop:before method="beforeMethod"  pointcut-ref="logingPointCut" ></aop:before>
+			<!-- 后置通知 -->
+			<aop:after-returning method="afterMethod" returning="re" 
+					pointcut-ref="logingPointCut"></aop:after-returning>
+			<!-- 最终通知 -->
+			<aop:after  method="finallyMethod" pointcut-ref="logingPointCut" ></aop:after>
+			<!-- 异常通知  在最终通知的后面-->
+			<aop:after-throwing  method="exceptionMethod"
+								 pointcut-ref="logingPointCut" 
+								 throwing="ex"/>
+		</aop:aspect>
+		
+	
+	</aop:config>
+
+
+	<!-- 
+	   不同类型参数的注入
+	错误，构造参数不匹配：Error creating bean with name 'user' defined in class path resource [applicationContext.xml]: 2 constructor arguments specified but no matching constructor found in bean 'user' (hint: specify index/type/name arguments for simple parameters to avoid type ambiguities)
+	 -->
+	<bean id="user" class="com.zrgk.entity.User">
+	<!-- 方式一根据索引赋值 -->
+	<!-- <constructor-arg index="0" value="1"/>
+	<constructor-arg index="1" value="lsx"/> -->
+	<!-- 方式二根据参数名字赋值,加了类型反而匹配不上了？？ -->
+	<constructor-arg  name="name"  value="lsx2"/>
+	<constructor-arg  name="id" value="2"/>
+	<!-- 方式三直接为属性赋值 -->
+		<!-- <property name="name" value="我是好人"></property> -->
+	</bean>
+
+	<bean id="entity" class="com.zrgk.entity.TestEntity">
+		<!-- 使用<![CDATA[]]>标记处理XML特 殊字符 -->
+		<property name="specialCharacter1">
+			<value>
+			<![CDATA[P&G]]>
+			</value>
+		</property>
+		<!-- 把XML特殊字符替换为实体引用 -->
+		<property name="specialCharacter2">
+			<value>P&amp;G</value>
+		</property>
+		<!-- 定义内部Bean -->
+		<property name="innerBean">
+			<bean class="com.zrgk.entity.User">
+				<property name="name">
+					<value>Mr. Inner</value>
+				</property>
+			</bean>
+		</property>
+
+	<!--外部bean的方式-->	
+	<!-- <property  name="innerBean" >
+		<ref  bean="user"/>
+	</property> -->
+
+
+		<!-- 注入List类型 -->
+		<property name="list">
+			<list>
+				<!-- 定义List中的元素 -->
+				<value>足球</value>
+				<value>篮球</value>
+				<value>排球</value>
+			</list>
+		</property>
+
+		<!-- 注入数组类型 -->
+		<property name="array">
+			<list>
+				<!-- 定义数组中的元素 -->
+				<value>足球</value>
+				<value>篮球</value>
+				<value>排球</value>
+			</list>
+		</property>
+
+		<!-- 注入Set类型 -->
+		<property name="set">
+			<list>
+				<!-- 定义Set或数组中的元素 -->
+				<value>足球</value>
+				<value>篮球</value>
+				<value>排球</value>
+			</list>
+		</property>
+
+		<!-- 注入Map类型 -->
+		<property name="map">
+			<map>
+				<!-- 定义Map中的键值对 -->
+				<entry>
+					<key>
+						<value>football</value>
+					</key>
+					<value>足球</value>
+				</entry>
+
+				<entry>
+					<key>
+						<value>
+						     basketball
+						</value>
+					</key>
+					<value>篮球</value>
+				</entry>
+				
+				<entry>
+					<key>
+						<value>
+						     paiqiuball
+						</value>
+					</key>
+					<value>排球</value>
+				</entry>
+			</map>
+		</property>
+		<!-- 注入Properties类型 -->
+		<property name="props">
+			<props>
+				<!-- 定义Properties中的键值对 -->
+				<prop key="football">足球</prop>
+				<prop key="basketball">篮球</prop>
+				<prop key="shatanball">沙滩球</prop>
+			</props>
+		</property>
+		<!-- 注入空字符串值 -->
+		<property name="emptyValue">
+			<value></value>
+		</property>
+		<!-- 注入null值 -->
+		<property name="nullValue">
+			<null/>
+		</property>
+	</bean>
+
+
+
+</beans>

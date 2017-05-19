@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+            http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<!--配置控制器的映射,完成url和action之间的映射-->
+	<bean id="urlMapping"
+		class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+		<property name="mappings">
+			<props>
+			<!--值为bean的id值
+			localhost:8080/spring0518/helloWorld.do
+			  -->
+				<prop key="helloWorld.do">helloWorldAction</prop>
+			</props>
+		</property>
+	</bean>
+	<!--配置视图-->
+	<!-- 视图扩展名解析器 对模型视图名称的解析，即在模型视图名称添加前后缀-->
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass"
+			value="org.springframework.web.servlet.view.JstlView" />
+			<property name="prefix" value="/"/>
+			<property name="suffix" value=".jsp"/>
+		</bean>
+		
+	<!--指定控制器的实现类，并且配置其参数的值  为属性设置值-->
+	<bean id="helloWorldAction"
+		class="com.zrgk.action.HelloWordAction">
+		<property name="helloWorld">
+			<value>你好，springMVC</value>
+		</property>
+		<property name="viewPage">
+			<value>sayHello</value>
+		</property>
+	</bean>
+</beans>
